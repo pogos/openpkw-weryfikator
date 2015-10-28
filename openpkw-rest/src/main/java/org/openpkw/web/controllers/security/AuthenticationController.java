@@ -23,7 +23,7 @@ import javax.ws.rs.core.MediaType;
  * @author sebastian.pogorzelski
  */
 @OpenPKWAPIController
-@RequestMapping(value="/api", consumes = {MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED}, produces = {MediaType.APPLICATION_JSON})
+@RequestMapping(value="/api2", consumes = {MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED}, produces = {MediaType.APPLICATION_JSON})
 public class AuthenticationController {
 
     @Inject

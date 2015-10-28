@@ -1,9 +1,11 @@
 package org.openpkw.web.controllers;
 
 import com.jayway.jsonpath.JsonPath;
+import org.apache.commons.codec.binary.Base64;
 import org.openpkw.web.config.TestAppConfig;
 import org.openpkw.web.config.TestJpaConfig;
 import org.openpkw.web.configuration.MVCConfig;
+import org.openpkw.web.configuration.OAuth2ServerConfiguration;
 import org.openpkw.web.configuration.SecurityConfig;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
@@ -30,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Security test for health check controller
  * @author Sebastian Pogorzelski
  */
-@ContextConfiguration(classes = {TestJpaConfig.class,TestAppConfig.class, MVCConfig.class, SecurityConfig.class})
+@ContextConfiguration(classes = {TestJpaConfig.class,TestAppConfig.class, MVCConfig.class, SecurityConfig.class, OAuth2ServerConfiguration.class})
 @WebAppConfiguration
 public class HealthCheckControllerTest extends AbstractTestNGSpringContextTests {
 
@@ -50,12 +52,35 @@ public class HealthCheckControllerTest extends AbstractTestNGSpringContextTests 
                 .build();
     }
 
+    /*
+
+     var data = "username=" +  encodeURIComponent(credentials.username) + "&password="
+                    + encodeURIComponent(credentials.password) + "&grant_type=password&scope=read%20write&" +
+                    "client_secret=mySecretOAuthSecret&client_id=oauth_sampleapp";
+
+     */
+
     private MvcResult authenticate() throws Exception {
-        return mvc.perform(post("/api/authenticate").param("username", "admin@openpkw.pl").param("password", "admin").contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk())
-                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("token").exists())
-                    .andReturn();
+        return mvc.perform(post("/oauth/token")
+                .param("username", "admin@openpkw.pl")
+                .param("password", "admin")
+                .param("grant_type", "password")
+//                        .param("scope", "read write")
+                .param("client_secret", "secret")
+                .param("client_id", "openpkw")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Basic " + new String(Base64.encodeBase64(("openpkw:secret").getBytes())))
+
+                )
+//                .andExpect(status().isOk())
+                        //.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                        //.andExpect(jsonPath("token").exists())
+
+//        String basicDigestHeaderValue = "Basic " + new String(Base64.encodeBase64(("<username>:<password>").getBytes()));
+//        this.mockMvc.perform(get("</get/url>").header("Authorization", basicDigestHeaderValue).accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
+
+                .andReturn();
     }
 
     @Test
